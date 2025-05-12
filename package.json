@@ -1,0 +1,18 @@
+{
+  "name": "crud-api",
+  "version": "1.0.0",
+  "description": "This is a CRUD API, done as a part of nodejs-assignments https://github.com/AlreadyBored/nodejs-assignments",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arumirinka/crud-api.git"
+  },
+  "author": "arumirinka"
+}
