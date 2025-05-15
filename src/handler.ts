@@ -2,7 +2,7 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import { routes } from "./routes";
 
 export const handler = (request: IncomingMessage, response: ServerResponse) => {
-  const currentRoute = routes.find((route) => route.method === request.method && route.path === request.url);
+  const currentRoute = routes.find((route) => route.method === request.method && request.url?.startsWith(route.path));
   if (currentRoute) {
     currentRoute.action(request, response);
   } else  {
