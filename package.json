@@ -6,7 +6,8 @@
     "node": ">=22.14.0"
   },
   "scripts": {
-    "start:dev": "nodemon src/index.ts"
+    "start:dev": "nodemon src/index.ts",
+    "start:prod": "tsc && node dist/index.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.0",
