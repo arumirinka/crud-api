@@ -1,19 +1,26 @@
+import { v4 as uuidV4, validate } from "uuid";
 import { isValidUser } from "./utils";
 import { usersDB } from "./db";
 import { Route, User } from "types";
 
 const getUsers: Route["action"] = async (req, res) => {
   const id = req.url?.split('/api/users/')?.at(-1);
-  if (id) {
-    const userById = usersDB.find((user) => user.id === id);
-    if (userById) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(userById));
+  if (id && !id.startsWith('/api/users')) {
+    if (!validate(id)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.write(JSON.stringify(`Invalid id ${id}.`));
       res.end();
     } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(`User with id ${id} was not found.`));
-      res.end();
+      const userById = usersDB.find((user) => user.id === id);
+      if (userById) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(userById));
+        res.end();
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(`User with id ${id} was not found.`));
+        res.end();
+      }
     }
   } else {
     const users = usersDB;
@@ -28,6 +35,7 @@ const addUser: Route["action"] = async (req, res) => {
   req.on('data', (chunk) => newUserData += chunk);
   req.on('end', () => {
     const newUser: User = JSON.parse(newUserData);
+    newUser.id = uuidV4();
     if (isValidUser(newUser)) {
       usersDB.push(newUser);
       res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -43,22 +51,28 @@ const addUser: Route["action"] = async (req, res) => {
 
 const updateUser: Route["action"] = async (req, res) => {
   const id = req.url?.split('/api/users/')?.at(-1);
-  if (id) {
-    const userId = usersDB.findIndex((user) => user.id === id);
-    if (userId >= 0) {
-      let updatedUserData = '';
-      req.on('data', (chunk) => updatedUserData += chunk);
-      req.on('end', () => {
-        const updatedUser: User = JSON.parse(updatedUserData);
-        usersDB[userId] = {...usersDB[userId], ...updatedUser};
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify(usersDB[userId]));
-        res.end();
-      });
-    } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(`User with id ${id} was not found.`));
+  if (id && !id.startsWith('/api/users')) {
+    if (!validate(id)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.write(JSON.stringify(`Invalid id ${id}.`));
       res.end();
+    } else {
+      const userId = usersDB.findIndex((user) => user.id === id);
+      if (userId >= 0) {
+        let updatedUserData = '';
+        req.on('data', (chunk) => updatedUserData += chunk);
+        req.on('end', () => {
+          const updatedUser: User = JSON.parse(updatedUserData);
+          usersDB[userId] = {...usersDB[userId], ...updatedUser};
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.write(JSON.stringify(usersDB[userId]));
+          res.end();
+        });
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(`User with id ${id} was not found.`));
+        res.end();
+      }
     }
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -69,17 +83,23 @@ const updateUser: Route["action"] = async (req, res) => {
 
 const deleteUser: Route["action"] = async (req, res) => {
   const id = req.url?.split('/api/users/')?.at(-1);
-  if (id) {
-    const userId = usersDB.findIndex((user) => user.id === id);
-    if (userId >= 0) {
-      usersDB.splice(userId, 1);
-      res.writeHead(204, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(`User with id ${id} successfully deleted.`));
+  if (id && !id.startsWith('/api/users')) {
+    if (!validate(id)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.write(JSON.stringify(`Invalid id ${id}.`));
       res.end();
     } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(`User with id ${id} was not found.`));
-      res.end();
+      const userId = usersDB.findIndex((user) => user.id === id);
+      if (userId >= 0) {
+        usersDB.splice(userId, 1);
+        res.writeHead(204, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(`User with id ${id} successfully deleted.`));
+        res.end();
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(`User with id ${id} was not found.`));
+        res.end();
+      }
     }
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
