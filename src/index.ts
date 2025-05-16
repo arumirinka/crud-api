@@ -4,7 +4,7 @@ import { handler } from './handler';
 
 const port = process.env.PORT || 4000;
 
-const server = http.createServer((req, res) => {
+export const server = http.createServer((req, res) => {
   handler(req, res);
 });
 
