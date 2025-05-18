@@ -38,9 +38,19 @@ const addUser: Route["action"] = async (req, res) => {
       const newUser: User = JSON.parse(newUserData);
       newUser.id = uuidV4();
       if (isValidUser(newUser)) {
-        usersDB.push(newUser);
+        usersDB.push({
+          id: newUser.id,
+          username: newUser.username,
+          age: newUser.age,
+          hobbies: newUser.hobbies
+        });
         res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify(newUser));
+        res.write(JSON.stringify({
+          id: newUser.id,
+          username: newUser.username,
+          age: newUser.age,
+          hobbies: newUser.hobbies
+        }));
         res.end();
       } else {
         res.writeHead(400, { 'Content-Type': 'application/json' });
