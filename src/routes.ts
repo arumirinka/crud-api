@@ -34,16 +34,22 @@ const addUser: Route["action"] = async (req, res) => {
   let newUserData = '';
   req.on('data', (chunk) => newUserData += chunk);
   req.on('end', () => {
-    const newUser: User = JSON.parse(newUserData);
-    newUser.id = uuidV4();
-    if (isValidUser(newUser)) {
-      usersDB.push(newUser);
-      res.writeHead(201, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify(newUser));
-      res.end();
-    } else {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.write(JSON.stringify("Bad input, please provide all the required fields: username, age, hobbies - in the correct format."));
+    try {
+      const newUser: User = JSON.parse(newUserData);
+      newUser.id = uuidV4();
+      if (isValidUser(newUser)) {
+        usersDB.push(newUser);
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(newUser));
+        res.end();
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify("Bad input, please provide all the required fields: username, age, hobbies - in the correct format."));
+        res.end();
+      }
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.write(JSON.stringify("Something went wrong."));
       res.end();
     }
   });
@@ -62,11 +68,29 @@ const updateUser: Route["action"] = async (req, res) => {
         let updatedUserData = '';
         req.on('data', (chunk) => updatedUserData += chunk);
         req.on('end', () => {
-          const updatedUser: User = JSON.parse(updatedUserData);
-          usersDB[userId] = {...usersDB[userId], ...updatedUser};
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.write(JSON.stringify(usersDB[userId]));
-          res.end();
+          try {
+            const updatedUser: User = JSON.parse(updatedUserData);
+            if (isValidUser(updatedUser)) {
+              usersDB[userId] = {
+                ...usersDB[userId],
+                id,
+                username: updatedUser.username,
+                age: updatedUser.age,
+                hobbies: updatedUser.hobbies
+              };
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.write(JSON.stringify(usersDB[userId]));
+              res.end();
+            } else {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.write(JSON.stringify("Bad input, please provide all the required fields: username, age, hobbies - in the correct format."));
+              res.end();
+            }
+          } catch (error) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify("Something went wrong."));
+            res.end();
+          }
         });
       } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });

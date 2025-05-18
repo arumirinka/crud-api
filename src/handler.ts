@@ -1,11 +1,11 @@
 import { IncomingMessage, ServerResponse } from "node:http";
 import { routes } from "./routes";
 
-export const handler = (request: IncomingMessage, response: ServerResponse) => {
+export const handler = async (request: IncomingMessage, response: ServerResponse) => {
   const currentRoute = routes.find((route) => route.method === request.method && request.url?.startsWith(route.path));
   if (currentRoute) {
     try {
-      currentRoute.action(request, response);
+      await currentRoute.action(request, response);
     } catch (error) {      
       response.writeHead(500, { 'Content-Type': 'application/json' });
       response.write(JSON.stringify(`Internal server error: ${error}`));
